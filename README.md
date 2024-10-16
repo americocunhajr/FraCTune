@@ -28,7 +28,11 @@ More details are in the following paper:
 Preprint available <a href="https://hal.archives-ouvertes.fr/xxx" target="_blank">here</a>.
 
 ### Features
-- 
+- Implements Cross-Entropy method for fractional-control tuning
+- Handles equality and inequality constraints using augmented Lagrangian method
+- Transparent "gray-box" optimizer with intuitive control parameters
+- Robust and scalable for moderately sized complex problems
+- Demonstrated applicability through select case studies
 
 ### Usage
 To get started with **FracTune**, follow these steps:
