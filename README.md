@@ -4,7 +4,7 @@
 ** is a Matlab package that implements a framework for tuning fractional-order controllers.The package leverages the Cross-Entropy (CE) method for global search optimization and employs an augmented Lagrangian formulation to handle equality and inequality constraints. With some straightforward adaptations, the FracTune strategy can also be applied to other types of modern controllers. 
 
 <p align="center">
-<img src="logo/FracTuneframework.png" width="80%">
+<img src="logo/FracTuneFramework.png" width="80%">
 </p>
 
 **FracTune** uses as optimization tool the package **CEopt - Cross-Entropy Optimizer**, which can be downloaded at <a href="https://ceopt.org" target="_blank">https://ceopt.org</a>.
