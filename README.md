@@ -68,7 +68,7 @@ Simulations done with **FracTune** are fully reproducible, as can be seen on thi
 
 ### Citing FracTune
 We ask the code users to cite the following manuscript in any publications reporting work done with our code:
-- *M. V. Issa, A. Pereira and A. Cunha Jr, The cross-entropy method for nonconvex structural optimization, 2024 (under review)*
+- *J. C. C. Basilio, J. G. Telles Ribeiro, T. R. Oliveira and A. Cunha Jr, Optimal tunning of fractional controllers via cross-entropy method, 2024 (under review)*
 
 ```
 @article{Basilio2024FracTune,
