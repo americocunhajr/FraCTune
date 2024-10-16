@@ -1,6 +1,6 @@
-## Fractional Control Tuner via Cross-entropy
+## Fractional Control Tuner via Cross-Entropy
 
-**FracTune: Fractional Control Tuner via Cross-entropy** is a Matlab package that implements a framework for tuning fractional-order controllers. The package leverages the Cross-Entropy (CE) method for global search optimization and employs an augmented Lagrangian formulation to handle equality and inequality constraints. With some straightforward adaptations, the FracTune strategy can also be applied to other types of modern controllers. 
+**FracTune: Fractional Control Tuner via Cross-Entropy** is a Matlab package that implements a framework for tuning fractional-order controllers. The package leverages the Cross-Entropy (CE) method for global search optimization and employs an augmented Lagrangian formulation to handle equality and inequality constraints. With some straightforward adaptations, the FracTune strategy can also be applied to other types of modern controllers. 
 
 <p align="center">
 <img src="logo/FracTuneFramework.png" width="75%">
