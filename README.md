@@ -62,8 +62,9 @@ The routines in **FracTune** are well-commented to explain their functionality. 
 Simulations done with **FracTune** are fully reproducible, as can be seen on this <a href="https://codeocean.com/capsule/xxx" target="_blank">CodeOcean capsule</a>.
 
 ### Authors
-- Marcos Vinicius Issa
-- Anderson Pereira
+- Julio Cesar de Castro Basilio
+- José Geraldo Telles Ribeiro
+- Tiago Roux de Oliveira
 - Americo Cunha Jr
 
 ### Citing FracTune
