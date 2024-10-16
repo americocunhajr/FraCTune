@@ -22,9 +22,9 @@
 - [Funding](#funding)
 
 ### Overview
-**FracTune** was developed to solve nonconvex optimization problems involving truss structures. The underlying results are reported in the following publication:
+**FracTune** was developed to tune fractional-order controllers for dynamical systems by solving nonconvex optimization problems via the cross-entropy method. The underlying results are reported in the following publication:
 More details are in the following paper:
-- *M. V. Issa, A. Pereira and A. Cunha Jr, The cross-entropy method for nonconvex structural optimization, 2024 (under review)*
+- *J. C. C. Basilio, J. G. Telles Ribeiro, T. R. Oliveira and A. Cunha Jr, Optimal tunning of fractional controllers via cross-entropy method, 2024 (under review)*
 
 Preprint available <a href="https://hal.archives-ouvertes.fr/xxx" target="_blank">here</a>.
 
@@ -43,16 +43,11 @@ To get started with **FracTune**, follow these steps:
    ```
 3. To optimize a structure, execute the main file corresponding to your case:
    ```bash
-   Main_TrussNbars_ObjFuncType_ConstraintType_Solver
+   Main_XXX
    ```
 
 This package includes the following files:
-* Main_Truss10_MassMin_YieldStress_CE.m  -- Mass minimization with yield stress constraints for a 10 bars truss using CE
-* Main_Truss10_MassMin_YieldStress_GA.m  -- Mass minimization with yield stress constraints for a 10 bars truss using GA
-* Main_Truss10_MassMin_YieldStress_SPQ.m  -- Mass minimization with yield stress constraints for a 10 bars truss using SQP
-* Main_Truss10_MassMin_FrequencyBounds_CE.m  -- Mass minimization with frequency constraints for a 10 bars truss using CE
-* Main_Truss10_MassMin_FrequencyBounds_GA.m  -- Mass minimization with frequency constraints for a 10 bars truss using GA
-* Main_Truss10_MassMin_FrequencyBounds_SQP.m  -- Mass minimization with frequency constraints for a 10 bars truss using SQP
+* Main_XXX.m  -- xxx
 
 ### Documentation
 The routines in **FracTune** are well-commented to explain their functionality. Each routine includes a description of its purpose, as well as inputs and outputs. 
