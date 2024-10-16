@@ -89,7 +89,7 @@ We ask the code users to cite the following manuscript in any publications repor
 
 ### Institutional support
 
-<img src="logo/logo_uerj_color.jpeg" width="10%"> &nbsp; &nbsp; <img src="logo/logo_pucrio_color.jpg" width="07%">
+<img src="logo/logo_uerj_color.jpeg" width="10%">
 
 ### Funding
 
