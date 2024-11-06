@@ -1,12 +1,12 @@
 ## Fractional Control Tuner via Cross-Entropy Method
 
-**FracTune: Fractional Control Tuner via Cross-Entropy Method** is a Matlab package that implements a framework for tuning fractional-order controllers. The package leverages the Cross-Entropy (CE) method for global search optimization and employs an augmented Lagrangian formulation to handle equality and inequality constraints. With some straightforward adaptations, the FracTune strategy can also be applied to other types of modern controllers. 
+**FraCTune: Fractional Control Tuner via Cross-Entropy Method** is a Matlab package that implements a framework for tuning fractional-order controllers. The package leverages the Cross-Entropy (CE) method for global search optimization and employs an augmented Lagrangian formulation to handle equality and inequality constraints. With some straightforward adaptations, the FracTune strategy can also be applied to other types of modern controllers. 
 
 <p align="center">
-<img src="logo/FracTuneFramework.png" width="75%">
+<img src="logo/FraCTuneFramework.png" width="75%">
 </p>
 
-**FracTune** uses as optimization tool the package **CEopt - Cross-Entropy Optimizer**, which can be downloaded at <a href="https://ceopt.org" target="_blank">https://ceopt.org</a>.
+**FraCTune** uses as optimization tool the package **CEopt - Cross-Entropy Optimizer**, which can be downloaded at <a href="https://ceopt.org" target="_blank">https://ceopt.org</a>.
 
 ### Table of Contents
 - [Overview](#overview)
@@ -21,7 +21,7 @@
 - [Funding](#funding)
 
 ### Overview
-**FracTune** was developed to tune fractional-order controllers for dynamical systems by solving nonconvex optimization problems via the cross-entropy method. The underlying results are reported in the following publication:
+**FraCTune** was developed to tune fractional-order controllers for dynamical systems by solving nonconvex optimization problems via the cross-entropy method. The underlying results are reported in the following publication:
 More details are in the following paper:
 - *J. C. C. Basilio, J. G. Telles Ribeiro, T. R. Oliveira and A. Cunha Jr, Optimal tunning of fractional controllers via cross-entropy method, 2024 (under review)*
 
@@ -35,14 +35,14 @@ Preprint available <a href="https://hal.archives-ouvertes.fr/xxx" target="_blank
 - Demonstrated applicability through select case studies
 
 ### Usage
-To get started with **FracTune**, follow these steps:
+To get started with **FraCTune**, follow these steps:
 1. Clone the repository:
    ```bash
-   git clone https://github.com/americocunhajr/FracTune.git
+   git clone https://github.com/americocunhajr/FraCTune.git
    ```
 2. Navigate to the code directory:
    ```bash
-   cd FracTune/FracTune-1.0
+   cd FraCTune/FraCTune-1.0
    ```
 3. To optimize a structure, execute the main file corresponding to your case:
    ```bash
@@ -53,11 +53,11 @@ This package includes the following files:
 * Main_XXX.m  -- xxx
 
 ### Documentation
-The routines in **FracTune** are well-commented to explain their functionality. Each routine includes a description of its purpose, as well as inputs and outputs. 
+The routines in **FraCTune** are well-commented to explain their functionality. Each routine includes a description of its purpose, as well as inputs and outputs. 
 
 ### Reproducibility
 
-Simulations done with **FracTune** are fully reproducible, as can be seen on this <a href="https://codeocean.com/capsule/xxx" target="_blank">CodeOcean capsule</a>.
+Simulations done with **FraCTune** are fully reproducible, as can be seen on this <a href="https://codeocean.com/capsule/xxx" target="_blank">CodeOcean capsule</a>.
 
 ### Authors
 - Julio Cesar de Castro Basilio
@@ -70,7 +70,7 @@ We ask the code users to cite the following manuscript in any publications repor
 - *J. C. C. Basilio, J. G. Telles Ribeiro, T. R. Oliveira and A. Cunha Jr, Optimal tunning of fractional controllers via cross-entropy method, 2024 (under review)*
 
 ```
-@article{Basilio2024FracTune,
+@article{Basilio2024FraCTune,
    author  = {J. C. C. Basilio and J. G. {Telles Ribeiro} and T. R. Oliveira and A {Cunha~Jr}},
    title   = {Optimal tunning of fractional controllers via cross-entropy method},
    journal = {Under Review},
@@ -82,7 +82,7 @@ We ask the code users to cite the following manuscript in any publications repor
 ```
 
 ### License
-**FracTune** is released under the MIT license. See the LICENSE file for details. All new contributions must be made under the MIT license.
+**FraCTune** is released under the MIT license. See the LICENSE file for details. All new contributions must be made under the MIT license.
 
 <img src="logo/mit_license_red.png" width="10%"> 
 
