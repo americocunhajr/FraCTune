@@ -44,13 +44,14 @@ To get started with **FraCTune**, follow these steps:
    ```bash
    cd FraCTune/FraCTune-1.0
    ```
-3. To optimize a structure, execute the main file corresponding to your case:
+3. Navigate to the desired case directory:
    ```bash
-   Main_XXX
+   cd FraCTune/FraCTune-1.0/CaseX-XXX
    ```
-
-This package includes the following files:
-* Main_XXX.m  -- xxx
+4. To tune a fractional controller, execute the main file corresponding to your case:
+   ```bash
+   MainCEoptCaseX_XXXX
+   ```
 
 ### Documentation
 The routines in **FraCTune** are well-commented to explain their functionality. Each routine includes a description of its purpose, as well as inputs and outputs. 
