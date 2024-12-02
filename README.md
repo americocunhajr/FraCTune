@@ -63,7 +63,6 @@ Simulations done with **FraCTune** are fully reproducible, as can be seen on thi
 ### Authors
 - Julio Cesar de Castro Basilio
 - José Geraldo Telles Ribeiro
-- Tiago Roux de Oliveira
 - Americo Cunha Jr
 
 ### Citing FracTune
