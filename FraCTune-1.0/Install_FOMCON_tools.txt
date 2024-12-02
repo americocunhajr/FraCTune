@@ -1,0 +1,8 @@
+Manual, for older MATLAB versions
+The installation currently comprises the following steps:
+
+Decompress the zipped folder into a directory of your choice, e.g. *C:\fomcon*
+Setup the directory in your MATLAB path. In the MATLAB, go to File > Set Path... and click on Add with Subfolders.... Now, select the directory that contains the fomcon folder.
+Save the path for future MATLAB sessions (usually administrator priveleges are necessary). This completes the installation.
+Checking if installation succeeded
+In MATLAB, type fomcon. If you can see a graphical user interface, the toolbox has been successfully installed.
