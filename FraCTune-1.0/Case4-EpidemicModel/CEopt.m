@@ -1,11 +1,11 @@
 % -----------------------------------------------------------------
 %  CEopt.m
 % -----------------------------------------------------------------
-%  programmer: Americo Cunha Jr
+%  Programmer: Americo Cunha Jr
 %              americo.cunhajr@gmail.com
 %
 %  Originally programmed in: Jun 18, 2021
-%           Last updated in: Apr 02, 2024
+%           Last updated in: Dec 11, 2024
 % -----------------------------------------------------------------
 %  This routine employs the Cross-entropy (CE) method to solve the 
 %  following optimization problem:
@@ -51,9 +51,9 @@
 %  lb      - (1 x Nvars) lower bound
 %  ub      - (1 x Nvars) upper bound
 %  nonlcon - nonlinear constraint function
-%  CEobj   -  Struct containing parameters and settings for the CE method.
+%  CEstr   -  Struct containing parameters and settings for the CE method.
 %  
-%  CEobj fields include:
+%  CEstr fields include:
 %  * Verbose          : boolean flag to enable/disable screem output
 %  * isConstrained    : boolean flag to indicate a constrained problem
 %  * isVectorized     : boolean flag to indicate a vectorized function
@@ -74,6 +74,7 @@
 %  * NonlconAlgorithm : algorithm to handle nonlinear constraints
 %  * InitialPenalty   : initial penalty value for the augmented Lagrangian
 %  * PenaltyFactor    : factor by which the penalty parameter is increased
+%  * MaximumPenalty   : maximum value for the penalty parameter
 %  * xmean            : history of mean value over iterations
 %  * xmedian          : history of median over iterations
 %  * xbest            : history of best sample point over iterations
@@ -103,18 +104,38 @@
 %             4 - function change and constranint error smaller than tolerance
 %             5 - std dev and constraint errors smaller than tolerance
 %             6 - minimum function value criterion met
-%  CEobj   -  The updated Cross-Entropy object struct containing the final
+%  CEstr   -  The updated Cross-Entropy object struct containing the final
 %             state  of  the  algorithm and possibly additional diagnostic
 %             information.
-%  
-%  Reference:
-%  Reuven Y. Rubinstein, Dirk P. Kroese
-%  The Cross-Entropy Method: A Unified Approach to Combinatorial 
-%  Optimization, Monte-Carlo Simulation, and Machine Learning
-%  Springer-Verlag, 2004.
 % -----------------------------------------------------------------
-function [Xopt,Fopt,ExitFlag,CEobj] = ...
-                    CEopt(fun,xmean0,sigma0,lb,ub,nonlcon,CEobj)
+%  References:
+%  
+%  [1] Reuven Y. Rubinstein, Dirk P. Kroese,
+%      The Cross-Entropy Method: A Unified Approach to Combinatorial 
+%      Optimization, Monte-Carlo Simulation, and Machine Learning,
+%      Springer-Verlag, 2004.
+%  
+%  [2] A. Cunha Jr, M. V. Issa, J. C. Basilio, J. G. Telles Ribeiro,
+%      CEopt: A MATLAB Package for Non-convex Optimization with the
+%      Cross-Entropy Method, ArXiv, 2024
+% -----------------------------------------------------------------
+%  Copyright (C) 2024  Americo Cunha Jr et al.
+% 
+%  This program is free software: you can redistribute it and/or modify
+%  it under the terms of the GNU General Public License as published by
+%  the Free Software Foundation, either version 3 of the License, or
+%  (at your option) any later version.
+%
+%  This program is distributed in the hope that it will be useful,
+%  but WITHOUT ANY WARRANTY; without even the implied warranty of
+%  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%  GNU General Public License for more details.
+%
+%  You should have received a copy of the GNU General Public License
+%  along with this program. If not, see <https://www.gnu.org/licenses/>.
+% -----------------------------------------------------------------
+function [Xopt,Fopt,ExitFlag,CEstr] = ...
+                    CEopt(fun,xmean0,sigma0,lb,ub,nonlcon,CEstr)
 
     % check number of arguments
     if nargin < 5
@@ -126,28 +147,28 @@ function [Xopt,Fopt,ExitFlag,CEobj] = ...
     % consistency check for the mandatory inputs parameters
     [lb,ub,xmean0,sigma0,Nvars] = CheckInput(lb,ub,xmean0,sigma0);
     
-    % check if CEobj is not provided or is empty
-    if nargin < 7 || isempty(CEobj)
-        CEobj = struct();
+    % check if CEstr is not provided or is empty
+    if nargin < 7 || isempty(CEstr)
+        CEstr = struct();
     end
 
-    % set the default parameters for CEobj (if necessary)
-    CEobj = InitializeCEobj(CEobj,Nvars);
+    % set the default parameters for CEstr (if necessary)
+    CEstr = InitializeCEstr(CEstr,Nvars);
 
-    % consistency check for CEobj parameters
-    CheckCEobj(CEobj);
+    % consistency check for CEstr parameters
+    CheckCEstr(CEstr);
 
     % check if nonlcon is not provided or is empty
     if nargin < 6 || isempty(nonlcon)
-        CEobj.isConstrained = false;
+        CEstr.isConstrained = false;
 
         % objective function
         ObjFun = @(x) fun(x);
     else
-        CEobj.isConstrained = true;
+        CEstr.isConstrained = true;
 
         % objective function
-        if strcmp(CEobj.NonlconAlgorithm,'AugLagrLog')
+        if strcmp(CEstr.NonlconAlgorithm,'AugLagrLog')
             ObjFun = @(x,Lg,Lh,p) AugLagrangian1(x,fun,nonlcon,Lg,Lh,p);
         else 
             ObjFun = @(x,Lg,Lh,p) AugLagrangian2(x,fun,nonlcon,Lg,Lh,p);
@@ -155,16 +176,16 @@ function [Xopt,Fopt,ExitFlag,CEobj] = ...
     end
 
     % decide the appropriate optimization solver
-    if ~CEobj.isConstrained
+    if ~CEstr.isConstrained
         
         % CE solver for an unconstrained problem
-        [Xopt,Fopt,ExitFlag,CEobj] = ...
-         UnconstrSolverCE(ObjFun,Nvars,xmean0,sigma0,lb,ub,CEobj);
+        [Xopt,Fopt,ExitFlag,CEstr] = ...
+         UnconstrSolverCE(ObjFun,Nvars,xmean0,sigma0,lb,ub,CEstr);
     else
         
         % CE solver for a constrained problem
-        [Xopt,Fopt,ExitFlag,CEobj] = ...
-         ConstrSolverCE(ObjFun,Nvars,xmean0,sigma0,lb,ub,nonlcon,CEobj);
+        [Xopt,Fopt,ExitFlag,CEstr] = ...
+         ConstrSolverCE(ObjFun,Nvars,xmean0,sigma0,lb,ub,nonlcon,CEstr);
     end
 end
 % -----------------------------------------------------------------
@@ -246,11 +267,11 @@ end
 % -----------------------------------------------------------------
 
 % -----------------------------------------------------------------
-% InitializeCEobj - initialize and set default parameters for CEobj
+% InitializeCEstr - initialize and set default parameters for CEstr
 % -----------------------------------------------------------------
-function CEobj = InitializeCEobj(CEobj,Nvars)
+function CEstr = InitializeCEstr(CEstr,Nvars)
 
-    % names and values for default fields of CEobj
+    % names and values for default fields of CEstr
     DefaultParams = struct(     ...
         'Verbose'         ,true       , ...
         'isConstrained'   ,false      , ...
@@ -271,134 +292,135 @@ function CEobj = InitializeCEobj(CEobj,Nvars)
         'q'               ,10         , ...
         'NonlconAlgorithm','AugLagLog', ... 
         'InitialPenalty'  ,10         , ...
-        'PenaltyFactor'   ,100          ...
+        'PenaltyFactor'   ,100        , ...
+        'MaximumPenalty'  ,+Inf         ...
     );
     
-    % assign values for undefined fields in CEobj
+    % assign values for undefined fields in CEstr
     DefaultFields = fieldnames(DefaultParams);
     for i = 1:numel(DefaultFields)
-        if ~isfield(CEobj, DefaultFields{i})
-            CEobj.(DefaultFields{i}) = DefaultParams.(DefaultFields{i});
+        if ~isfield(CEstr, DefaultFields{i})
+            CEstr.(DefaultFields{i}) = DefaultParams.(DefaultFields{i});
         end
     end
 
-    % get the strange fields in CEobj
-    StrangeFields = rmfield(CEobj,DefaultFields);
+    % get the strange fields in CEstr
+    StrangeFields = rmfield(CEstr,DefaultFields);
 
-    % remove the strange fields from CEobj
-    CEobj = rmfield(CEobj,fieldnames(StrangeFields));
+    % remove the strange fields from CEstr
+    CEstr = rmfield(CEstr,fieldnames(StrangeFields));
 
-    % order the default fields in CEobj
-    CEobj = orderfields(CEobj,DefaultParams);
+    % order the default fields in CEstr
+    CEstr = orderfields(CEstr,DefaultParams);
 
     % preallocate memory or initiate objects
-    CEobj.xmean       = NaN*ones(CEobj.MaxIter,Nvars);
-    CEobj.xmedian     = NaN*ones(CEobj.MaxIter,Nvars);
-    CEobj.xbest       = NaN*ones(CEobj.MaxIter,Nvars);
-    CEobj.Fmean       = NaN*ones(CEobj.MaxIter,1    );
-    CEobj.Fmedian     = NaN*ones(CEobj.MaxIter,1    );
-    CEobj.Fbest       = NaN*ones(CEobj.MaxIter,1    );
-    CEobj.sigma       = NaN*ones(CEobj.MaxIter,Nvars);
-    CEobj.ErrorS      = NaN*ones(CEobj.MaxIter,1    );
-    CEobj.ErrorC      = NaN*ones(CEobj.MaxIter,1    );
-    CEobj.iter        = 0;
-    CEobj.stall       = 0;
-    CEobj.Fcount      = 0;
+    CEstr.xmean       = NaN*ones(CEstr.MaxIter,Nvars);
+    CEstr.xmedian     = NaN*ones(CEstr.MaxIter,Nvars);
+    CEstr.xbest       = NaN*ones(CEstr.MaxIter,Nvars);
+    CEstr.Fmean       = NaN*ones(CEstr.MaxIter,1    );
+    CEstr.Fmedian     = NaN*ones(CEstr.MaxIter,1    );
+    CEstr.Fbest       = NaN*ones(CEstr.MaxIter,1    );
+    CEstr.sigma       = NaN*ones(CEstr.MaxIter,Nvars);
+    CEstr.ErrorS      = NaN*ones(CEstr.MaxIter,1    );
+    CEstr.ErrorC      = NaN*ones(CEstr.MaxIter,1    );
+    CEstr.iter        = 0;
+    CEstr.stall       = 0;
+    CEstr.Fcount      = 0;
 end
 % -----------------------------------------------------------------
 
 % -----------------------------------------------------------------
-% CheckCEobj - check parameters consistency for CEobj
+% CheckCEstr - check parameters consistency for CEstr
 % -----------------------------------------------------------------
-function CheckCEobj(CEobj)
+function CheckCEstr(CEstr)
 
     % flag to show output on screem
-    if mod(CEobj.Verbose,1) ~= 0
+    if mod(CEstr.Verbose,1) ~= 0
         error('Verbose must be integer')
     end
 
     % elite samples percentage
-    if ~isnumeric(CEobj.PenaltyFactor)   || ...
-                  CEobj.EliteFactor <= 0 || ...
-                  CEobj.EliteFactor > 1
+    if ~isnumeric(CEstr.PenaltyFactor)   || ...
+                  CEstr.EliteFactor <= 0 || ...
+                  CEstr.EliteFactor > 1
         error('EliteFactor must be such that 0 < EliteFactor <= 1')
     end
 
     % number of samples
-    if ~isnumeric(CEobj.Nsamp) || CEobj.Nsamp <= 1
+    if ~isnumeric(CEstr.Nsamp) || CEstr.Nsamp <= 1
         error('Nsamp must be greather than 1')
     end
 
     % maximum number of iterations
-    if mod(CEobj.MaxIter,1) ~= 0 || CEobj.MaxIter < 1
+    if mod(CEstr.MaxIter,1) ~= 0 || CEstr.MaxIter < 1
         error('MaxIter must be a positive integer')
     end
 
     % maximum number of stall iterations
-    if mod(CEobj.MaxStall,1) ~= 0 || CEobj.MaxStall < 1
+    if mod(CEstr.MaxStall,1) ~= 0 || CEstr.MaxStall < 1
         error('MaxStall must be a positive integer')
     end
 
     % maximum number of function evaluations
-    if (mod(CEobj.MaxFcount,1) == 0 && CEobj.MaxFcount < 1) || ...
-       (mod(CEobj.MaxFcount,1) ~= 0 && CEobj.MaxFcount ~= Inf)
+    if (mod(CEstr.MaxFcount,1) == 0 && CEstr.MaxFcount < 1) || ...
+       (mod(CEstr.MaxFcount,1) ~= 0 && CEstr.MaxFcount ~= Inf)
         error('MaxFcount must be a positive integer or infinity')
     end
 
     % minimum function value
-    if ~isnumeric(CEobj.MinFval)
+    if ~isnumeric(CEstr.MinFval)
         error('MinFval must be numeric')
     end
 
     % absolute tolerance
-    if ~isnumeric(CEobj.TolAbs) || any(CEobj.TolAbs <= 0.0)
+    if ~isnumeric(CEstr.TolAbs) || any(CEstr.TolAbs <= 0.0)
         error('TolAbs must be positive real')
     end
     
     % relative tolerance
-    if ~isnumeric(CEobj.TolRel) || CEobj.TolRel < 0.0
+    if ~isnumeric(CEstr.TolRel) || CEstr.TolRel < 0.0
         error('TolRel must be non-negative real')
     end
 
     % constraint tolerance
-    if ~isnumeric(CEobj.TolCon) || CEobj.TolCon < 0.0
+    if ~isnumeric(CEstr.TolCon) || CEstr.TolCon < 0.0
         error('TolCon must be non-negative real')
     end
 
     % function tolerance
-    if ~isnumeric(CEobj.TolFun) || CEobj.TolFun < 0.0
+    if ~isnumeric(CEstr.TolFun) || CEstr.TolFun < 0.0
         error('TolFun must be non-negative')
     end
 
     % smoothing parameter (0 < alpha <= 1)
-    if ~isnumeric(CEobj.alpha) || CEobj.alpha <= 0 || CEobj.alpha > 1
+    if ~isnumeric(CEstr.alpha) || CEstr.alpha <= 0 || CEstr.alpha > 1
         error('alpha must be such that 0 < alpha <= 1')
     end
 
     % dynamic smoothing parameter
-    if ~isnumeric(CEobj.beta) || CEobj.beta <= 0
+    if ~isnumeric(CEstr.beta) || CEstr.beta <= 0
         error('beta must be non-negative')
     end
 
     % dynamic smoothing parameter
-    if ~isnumeric(CEobj.q) || CEobj.q <= 0
+    if ~isnumeric(CEstr.q) || CEstr.q <= 0
         error('q must be non-negative')
     end
 
     % nonlinear constraint algorithm 
-    if  ~ischar(CEobj.NonlconAlgorithm)             || ...
-       (~strcmp(CEobj.NonlconAlgorithm,'AugLagLog') && ...
-        ~strcmp(CEobj.NonlconAlgorithm,'AugLagMax'))
+    if  ~ischar(CEstr.NonlconAlgorithm)             || ...
+       (~strcmp(CEstr.NonlconAlgorithm,'AugLagLog') && ...
+        ~strcmp(CEstr.NonlconAlgorithm,'AugLagMax'))
         error('Unknown option for NonlconAlgorithm')
     end
 
     % initial penalty
-    if ~isnumeric(CEobj.InitialPenalty) || CEobj.InitialPenalty <= 0
+    if ~isnumeric(CEstr.InitialPenalty) || CEstr.InitialPenalty <= 0
         error('InitialPenalty must be must be non-negative')
     end
 
     % penalty factor
-    if ~isnumeric(CEobj.PenaltyFactor) || CEobj.PenaltyFactor <= 1
+    if ~isnumeric(CEstr.PenaltyFactor) || CEstr.PenaltyFactor <= 1
         error('PenaltyFactor must be greather than 1')
     end
 end
@@ -407,31 +429,31 @@ end
 % -----------------------------------------------------------------
 % UnconstrSolverCE - solve an unconstrained optimization problem
 % -----------------------------------------------------------------
-function [Xopt,Fopt,ExitFlag,CEobj] = ...
-              UnconstrSolverCE(fun,Nvars,xmean0,sigma0,lb,ub,CEobj)
+function [Xopt,Fopt,ExitFlag,CEstr] = ...
+              UnconstrSolverCE(fun,Nvars,xmean0,sigma0,lb,ub,CEstr)
 
     % initialize parameters
-    t           = 0;                 % iteration counter
-    stall       = 0;                 % stall iterations counter
-    Fcount      = 0;                 % function evaluation counter
-    EliteFactor = CEobj.EliteFactor; % elite factor
-    Nsamp       = CEobj.Nsamp;       % total number of samples
-    Nelite      = EliteFactor*Nsamp; % number of elite samples
-    MaxIter     = CEobj.MaxIter;     % maximum of iterations
-    TolAbs      = CEobj.TolAbs;      % absolute   tolerance
-    TolRel      = CEobj.TolRel;      % relative   tolerance
-    alpha       = CEobj.alpha;       % smoothing parameter for mean
-    beta        = CEobj.beta;        % smoothing parameter for std. dev.
-    q           = CEobj.q;           % dynamic update parameter
-    Xopt        = NaN*xmean0;        % optimal point
-    Fopt        = +Inf;              % optimal value
-    ExitFlag    = 0;                 % termination condition flag
+    t           = 0;                        % iteration counter
+    stall       = 0;                        % stall iterations counter
+    Fcount      = 0;                        % function evaluation counter
+    EliteFactor = CEstr.EliteFactor;        % elite factor
+    Nsamp       = CEstr.Nsamp;              % total number of samples
+    Nelite      = round(EliteFactor*Nsamp); % number of elite samples
+    MaxIter     = CEstr.MaxIter;            % maximum of iterations
+    TolAbs      = CEstr.TolAbs;             % absolute   tolerance
+    TolRel      = CEstr.TolRel;             % relative   tolerance
+    alpha       = CEstr.alpha;              % smoothing parameter for mean
+    beta        = CEstr.beta;               % smoothing parameter for std. dev.
+    q           = CEstr.q;                  % dynamic update parameter
+    Xopt        = NaN*xmean0;               % optimal point
+    Fopt        = +Inf;                     % optimal value
+    ExitFlag    = 0;                        % termination condition flag
     
     % preallocate memory for design variables samples
     X = zeros(Nsamp,Nvars);
     
     % preallocate memory for objective function (if necessary)
-    if ~CEobj.isVectorized
+    if ~CEstr.isVectorized
         F = NaN*ones(Nsamp,1);
     end
 
@@ -445,7 +467,7 @@ function [Xopt,Fopt,ExitFlag,CEobj] = ...
         X = DomainSampling(xmean0,sigma0,lb,ub,Nvars,Nsamp,X);
         
         % evaluate objective function
-        if ~CEobj.isVectorized
+        if ~CEstr.isVectorized
             % case where fun is not a vectorized function
             for n = 1:Nsamp
                 F(n) = fun(X(n,:));
@@ -474,80 +496,82 @@ function [Xopt,Fopt,ExitFlag,CEobj] = ...
         
         % update the optimum
         if Fbest < Fopt
-           Xopt  = xbest;
-           Fopt  = Fbest;
-           stall = 0;
+           CEstr.xbest(t,:) = xbest;
+           CEstr.Fbest(t)   = Fbest;
+           Xopt             = xbest;
+           Fopt             = Fbest;
+           stall            = 0;
         else
-            % stall iterations counter
-            stall = stall + 1;
+            CEstr.xbest(t,:) = CEstr.xbest(t-1,:);
+            CEstr.Fbest(t)   = CEstr.Fbest(t-1);
+            stall            = stall + 1;
         end
         
         % update optimization process history
-        CEobj.iter         = t;
-        CEobj.stall        = stall;
-        CEobj.Fcount       = Fcount;
-        CEobj.xmean(t,:)   = xmean;
-        CEobj.xmedian(t,:) = xmedian;
-        CEobj.xbest(t,:)   = xbest;
-        CEobj.Fmean(t)     = Fmean;
-        CEobj.Fmedian(t)   = Fmedian;
-        CEobj.Fbest(t)     = Fbest;
-        CEobj.sigma(t,:)   = sigma;
-        CEobj.ErrorS(t)    = ErrorS;
+        CEstr.iter         = t;
+        CEstr.stall        = stall;
+        CEstr.Fcount       = Fcount;
+        CEstr.xmean(t,:)   = xmean;
+        CEstr.xmedian(t,:) = xmedian;
+        CEstr.Fmean(t)     = Fmean;
+        CEstr.Fmedian(t)   = Fmedian;
+        CEstr.sigma(t,:)   = sigma;
+        CEstr.ErrorS(t)    = ErrorS;
 
         % print iteration progress on the screen
-        if CEobj.Verbose
-            PrintProgress(t,Nvars,CEobj);
+        if CEstr.Verbose
+            PrintProgress(t,Nvars,CEstr);
         end
         
         % check the convergence
-        ExitFlag = CheckConv(Fopt,SmallErrorS,[],CEobj);
+        ExitFlag = CheckConv(Fopt,SmallErrorS,[],CEstr);
     end
 
-    % convergence check and update of 'Convergenobjatus' field
-    if ExitFlag > 0
-        CEobj.ConvergenceStatus = true;
+    % convergence check and update of 'ConvergenceStatus' field
+    if ExitFlag > 3
+        CEstr.ConvergenceStatus = true;
     else
-        CEobj.ConvergenceStatus = false;
+        CEstr.ConvergenceStatus = false;
     end
     
     % print resume
-	if CEobj.Verbose
-        PrintEnd(Xopt,Fopt,ExitFlag,CEobj);
+	if CEstr.Verbose
+        PrintEnd(Xopt,Fopt,ExitFlag,CEstr);
 	end
     
 	% delete empty entries from sampling records
-    CEobj = DeleteEmptyEntries(t,CEobj);
+    CEstr = DeleteEmptyEntries(t,CEstr);
 end
 % -----------------------------------------------------------------
 
 % -----------------------------------------------------------------
 % ConstrSolverCE - solve a constrained optimization problem
 % -----------------------------------------------------------------
-function [Xopt,Fopt,ExitFlag,CEobj] = ...
-           ConstrSolverCE(fun,Nvars,xmean0,sigma0,lb,ub,nonlcon,CEobj)
+function [Xopt,Fopt,ExitFlag,CEstr] = ...
+           ConstrSolverCE(fun,Nvars,xmean0,sigma0,lb,ub,nonlcon,CEstr)
 
     % initialize parameters
     t           = 0;                 % iteration counter
     stall       = 0;                 % stall iterations counter
     Fcount      = 0;                 % function evaluation counter
-    EliteFactor = CEobj.EliteFactor; % elite factor
-    Nsamp       = CEobj.Nsamp;       % total number of samples
+    EliteFactor = CEstr.EliteFactor; % elite factor
+    Nsamp       = CEstr.Nsamp;       % total number of samples
     Nelite      = EliteFactor*Nsamp; % number of elite samples
-    MaxIter     = CEobj.MaxIter;     % maximum of iterations
-    TolAbs      = CEobj.TolAbs;      % absolute   tolerance
-    TolRel      = CEobj.TolRel;      % relative   tolerance
-    TolCon      = CEobj.TolCon;      % constraint tolerance
-    alpha       = CEobj.alpha;       % smoothing parameter for mean
-    beta        = CEobj.beta;        % smoothing parameter for std. dev.
-    q           = CEobj.q;           % dynamic update parameter
+    MaxIter     = CEstr.MaxIter;     % maximum of iterations
+    TolAbs      = CEstr.TolAbs;      % absolute   tolerance
+    TolRel      = CEstr.TolRel;      % relative   tolerance
+    TolCon      = CEstr.TolCon;      % constraint tolerance
+    alpha       = CEstr.alpha;       % smoothing parameter for mean
+    beta        = CEstr.beta;        % smoothing parameter for std. dev.
+    q           = CEstr.q;           % dynamic update parameter
     Xopt        = NaN*xmean0;        % optimal point
     Fopt        = +Inf;              % optimal value
     ExitFlag    = 0;                 % termination condition flag
     
     % initialize penalty parameters
-    Penalty       = CEobj.InitialPenalty;
-    PenaltyFactor = CEobj.PenaltyFactor;
+    Penalty        = CEstr.InitialPenalty;
+    PenaltyFactor  = CEstr.PenaltyFactor;
+    MaximumPenalty = CEstr.MaximumPenalty;
 
     % initialize Lagrange multipliers
     [G0,H0] = nonlcon(xmean0);
@@ -555,12 +579,15 @@ function [Xopt,Fopt,ExitFlag,CEobj] = ...
     if isempty(H0), H0 = 0.0; end
     lambdaG = zeros(size(G0));
     lambdaH = zeros(size(H0));
+
+    % initialize constraint error
+    ErrorC = ComputeErrorC(G0,H0,lambdaG,lambdaH,Penalty,TolCon,1.0);
     
     % preallocate memory for design variables samples
     X = zeros(Nsamp,Nvars);
 
     % preallocate memory for objective function (if necessary)
-    if ~CEobj.isVectorized
+    if ~CEstr.isVectorized
         F = NaN*ones(Nsamp,1);
     end
 
@@ -574,7 +601,7 @@ function [Xopt,Fopt,ExitFlag,CEobj] = ...
         X = DomainSampling(xmean0,sigma0,lb,ub,Nvars,Nsamp,X);
 
         % evaluate augmented Lagrangian 
-        if ~CEobj.isVectorized
+        if ~CEstr.isVectorized
             % case where fun is not a vectorized function
             for n = 1:Nsamp
                 F(n) = fun(X(n,:),lambdaG,lambdaH,Penalty);
@@ -597,16 +624,20 @@ function [Xopt,Fopt,ExitFlag,CEobj] = ...
         % standard deviation error
         [ErrorS,SmallErrorS] = ComputeErrorS(sigma,sigma0,TolAbs,TolRel);
 
-        % update Lagrange multipliers
-        [lambdaG,lambdaH,G,H] = ...
-                UpdateLagrangeMult(xbest,nonlcon,lambdaG,lambdaH,Penalty);
-        
-        % constraint error
+        % evalute the constraints at xbest
+        [G,H] = nonlcon(xbest);
+
+        % evaluate the constraint error
         [ErrorC,SmallErrorC] = ...
-                        ComputeErrorC(G,H,lambdaG,lambdaH,Penalty,TolCon);
+                ComputeErrorC(G,H,lambdaG,lambdaH,Penalty,TolCon,ErrorC);
+        
+        % update Lagrange multipliers
+        [lambdaG,lambdaH] = ...
+                        UpdateLagrangeMult(G,H,lambdaG,lambdaH,Penalty);
 
         % update pentalty parameter
-        Penalty = UpdatePenalty(Penalty,PenaltyFactor,SmallErrorC);
+        Penalty = ...
+          UpdatePenalty(Penalty,PenaltyFactor,MaximumPenalty,SmallErrorC);
         
         % update old parameters
         xmean0 = xmean;
@@ -614,51 +645,52 @@ function [Xopt,Fopt,ExitFlag,CEobj] = ...
         
         % update the optimum
         if Fbest < Fopt
-           Xopt  = xbest;
-           Fopt  = Fbest;
-           stall = 0;
+           CEstr.xbest(t,:) = xbest;
+           CEstr.Fbest(t)   = Fbest;
+           Xopt             = xbest;
+           Fopt             = Fbest;
+           stall            = 0;
         else
-            % stall iterations counter
-            stall = stall + 1;
+            CEstr.xbest(t,:) = CEstr.xbest(t-1,:);
+            CEstr.Fbest(t)   = CEstr.Fbest(t-1);
+            stall            = stall + 1;
         end
         
         % update optimization process history
-        CEobj.iter         = t;
-        CEobj.stall        = stall;
-        CEobj.Fcount       = Fcount;
-        CEobj.xmean(t,:)   = xmean;
-        CEobj.xmedian(t,:) = xmedian;
-        CEobj.xbest(t,:)   = xbest;
-        CEobj.Fmean(t)     = Fmean;
-        CEobj.Fmedian(t)   = Fmedian;
-        CEobj.Fbest(t)     = Fbest;
-        CEobj.sigma(t,:)   = sigma;
-        CEobj.ErrorS(t)    = ErrorS;
-        CEobj.ErrorC(t)    = ErrorC;
+        CEstr.iter         = t;
+        CEstr.stall        = stall;
+        CEstr.Fcount       = Fcount;
+        CEstr.xmean(t,:)   = xmean;
+        CEstr.xmedian(t,:) = xmedian;
+        CEstr.Fmean(t)     = Fmean;
+        CEstr.Fmedian(t)   = Fmedian;
+        CEstr.sigma(t,:)   = sigma;
+        CEstr.ErrorS(t)    = ErrorS;
+        CEstr.ErrorC(t)    = ErrorC;
 
         % print iteration progress on the screen
-        if CEobj.Verbose
-            PrintProgress(t,Nvars,CEobj);
+        if CEstr.Verbose
+            PrintProgress(t,Nvars,CEstr);
         end
         
         % check the convergence
-        ExitFlag = CheckConv(Fopt,SmallErrorS,SmallErrorC,CEobj);
+        ExitFlag = CheckConv(Fopt,SmallErrorS,SmallErrorC,CEstr);
     end
 
     % convergence check and update of 'ConvergenceStatus' field
-    if ExitFlag > 0
-        CEobj.ConvergenceStatus = true;
+    if ExitFlag > 3
+        CEstr.ConvergenceStatus = true;
     else
-        CEobj.ConvergenceStatus = false;
+        CEstr.ConvergenceStatus = false;
     end
     
     % print resume
-	if CEobj.Verbose
-        PrintEnd(Xopt,Fopt,ExitFlag,CEobj);
+	if CEstr.Verbose
+        PrintEnd(Xopt,Fopt,ExitFlag,CEstr);
 	end
     
 	% delete empty entries from sampling records
-    CEobj = DeleteEmptyEntries(t,CEobj);
+    CEstr = DeleteEmptyEntries(t,CEstr);
 end
 % -----------------------------------------------------------------
 
@@ -807,11 +839,10 @@ end
 % -----------------------------------------------------------------
 % UpdateLagrangeMult - update Lagrange multipliers
 % -----------------------------------------------------------------
-function [lambdaG,lambdaH,G,H] = ...
-              UpdateLagrangeMult(x,nonlcon,lambdaG,lambdaH,Penalty)
+function [lambdaG,lambdaH] = ...
+                 UpdateLagrangeMult(G,H,lambdaG,lambdaH,Penalty)
     
-    % nonlinear constraints at x
-    [G,H] = nonlcon(x);
+    % check the nonlinear constraints
     if isempty(G), G = 0.0; end
     if isempty(H), H = 0.0; end
 
@@ -827,28 +858,33 @@ end
 % ComputeErrorC - compute constraint error
 % -----------------------------------------------------------------
 function [ErrorC,SmallErrorC] = ...
-                 ComputeErrorC(G,H,lambdaG,lambdaH,Penalty,TolCon)
+                 ComputeErrorC(G,H,lambdaG,lambdaH,Penalty,TolCon,ErrorC0)
+
+    % check the nonlinear constraints
+    if isempty(G), G = 0.0; end
+    if isempty(H), H = 0.0; end
 
     % constraints violation metrics
-    ViolationEq  = max(abs(H));
-    ViolationIn  = max(min(-G,lambdaG/Penalty));
+    ViolationEqNorm = norm(H,Inf);
+    ViolationInNorm = norm(min(-G,lambdaG/Penalty),Inf);
     
     % constraints violation error
-    ErrorC = max(ViolationIn,ViolationEq);
+    ErrorC = max(ViolationEqNorm,ViolationInNorm);
 
     % convergence indicator for constraint violation
-    SmallErrorC = abs(ErrorC) <= TolCon;
+    SmallErrorC = ErrorC <= TolCon*ErrorC0;
 end
 % -----------------------------------------------------------------
 
 % -----------------------------------------------------------------
 % UpdatePenalty - update penalty parameter
 % -----------------------------------------------------------------
-function Penalty = UpdatePenalty(Penalty,PenaltyFactor,SmallErrorC)
+function Penalty = ...
+    UpdatePenalty(Penalty,PenaltyFactor,MaximumPenalty,SmallErrorC)
 
     % update penalty parameter
     if ~SmallErrorC
-        Penalty = PenaltyFactor*Penalty;
+        Penalty = min(PenaltyFactor*Penalty,MaximumPenalty);
     end
 end
 % -----------------------------------------------------------------
@@ -856,7 +892,7 @@ end
 % -----------------------------------------------------------------
 % CheckConv - verify the convergence
 % -----------------------------------------------------------------
-function ExitFlag = CheckConv(Fopt,SmallErrorS,SmallErrorC,CEobj)
+function ExitFlag = CheckConv(Fopt,SmallErrorS,SmallErrorC,CEstr)
 
     % check if SmallErrorC is empty
     if isempty(SmallErrorC)
@@ -867,30 +903,30 @@ function ExitFlag = CheckConv(Fopt,SmallErrorS,SmallErrorC,CEobj)
     ExitFlag = 0;
     
     % check if maximum of iterations is reached
-    if CEobj.iter >= CEobj.MaxIter
+    if CEstr.iter >= CEstr.MaxIter
         ExitFlag = 1;
         return
     end
 
     % check if maximum of stall iterations is reached
-    if CEobj.stall >= CEobj.MaxStall
+    if CEstr.stall >= CEstr.MaxStall
         ExitFlag = 2;
         return
     end
 
     % check if the maximum of function evaluations is reached
-    if CEobj.Fcount >= CEobj.MaxFcount
+    if CEstr.Fcount >= CEstr.MaxFcount
         ExitFlag = 3;
         return
     end
 
     % check if both the function change and constraint error are small
-    if CEobj.iter >= CEobj.MaxStall
+    if CEstr.iter >= CEstr.MaxStall
         
-        Idx1 = CEobj.iter;
-        Idx0 = CEobj.iter - CEobj.MaxStall + 1;
+        Idx1 = CEstr.iter;
+        Idx0 = CEstr.iter - CEstr.MaxStall + 1;
 
-        if range(CEobj.Fbest(Idx0:Idx1)) <= CEobj.TolFun && SmallErrorC
+        if range(CEstr.Fbest(Idx0:Idx1)) <= CEstr.TolFun && SmallErrorC
             ExitFlag = 4;
             return
         end
@@ -903,7 +939,7 @@ function ExitFlag = CheckConv(Fopt,SmallErrorS,SmallErrorC,CEobj)
     end
 
     % check if the admissible minimum is reached
-    if Fopt <= CEobj.MinFval
+    if Fopt <= CEstr.MinFval
         ExitFlag = 6;
         return
     end
@@ -914,11 +950,11 @@ end
 % -----------------------------------------------------------------
 % PrintProgress - print iteration progress on the screen
 % -----------------------------------------------------------------
-function PrintProgress(t,Nvars,CEobj)
+function PrintProgress(t,Nvars,CEstr)
 
     % print header in the first level
     if t == 1 && Nvars <= 5
-        if CEobj.isConstrained
+        if CEstr.isConstrained
             MyHeader = ['\n iter   func value       error std dev',...
                         '   error constr    design variable(s) \n'];
         else
@@ -930,7 +966,7 @@ function PrintProgress(t,Nvars,CEobj)
         MyHeader = ['It is not possible to print more than',...
                             ' 5 design variables on the screen \n'];
         fprintf(MyHeader);
-        if CEobj.isConstrained
+        if CEstr.isConstrained
             MyHeader = ['\n iter   func value       error std dev',...
                         '   error constr \n'];
         else
@@ -940,7 +976,7 @@ function PrintProgress(t,Nvars,CEobj)
     end
     
     % initial string with (t, F, Error)
-    if CEobj.isConstrained
+    if CEstr.isConstrained
         MyString = '\n %5g %+.9E %.9E %.9E';
     else
         MyString = '\n %5g %+.9E %.9E';
@@ -953,22 +989,22 @@ function PrintProgress(t,Nvars,CEobj)
             MyString = strcat(MyString,' %+.6E');
         end
         % values with x
-        if CEobj.isConstrained
-            fprintf(MyString,t,CEobj.Fmean(t) ,...
-                               CEobj.ErrorS(t),...
-                               CEobj.ErrorC(t),...
-                               CEobj.xmean(t,:));
+        if CEstr.isConstrained
+            fprintf(MyString,t,CEstr.Fmean(t) ,...
+                               CEstr.ErrorS(t),...
+                               CEstr.ErrorC(t),...
+                               CEstr.xmean(t,:));
         else
-            fprintf(MyString,t,CEobj.Fmean(t) ,...
-                               CEobj.ErrorS(t),...
-                               CEobj.xmean(t,:));
+            fprintf(MyString,t,CEstr.Fmean(t) ,...
+                               CEstr.ErrorS(t),...
+                               CEstr.xmean(t,:));
         end
     else
         % values without x
-        if CEobj.isConstrained
-            fprintf(MyString,t,CEobj.Fmean(t),CEobj.ErrorS(t),CEobj.ErrorC(t));
+        if CEstr.isConstrained
+            fprintf(MyString,t,CEstr.Fmean(t),CEstr.ErrorS(t),CEstr.ErrorC(t));
         else
-            fprintf(MyString,t,CEobj.Fmean(t),CEobj.ErrorS(t));
+            fprintf(MyString,t,CEstr.Fmean(t),CEstr.ErrorS(t));
         end
     end
 end
@@ -977,7 +1013,7 @@ end
 % -----------------------------------------------------------------
 % PrintEnd - Display a summary of the optimization results
 % -----------------------------------------------------------------
-function PrintEnd(Xopt, Fopt, ExitFlag, CEobj)
+function PrintEnd(Xopt, Fopt, ExitFlag, CEstr)
     
     % Interpret ExitFlag and display appropriate message
     switch ExitFlag
@@ -991,14 +1027,14 @@ function PrintEnd(Xopt, Fopt, ExitFlag, CEobj)
         case 4
             Msg = ['Objective function range has not changed significantly ', ...
                    'after many iterations. '];
-            if CEobj.isConstrained
+            if CEstr.isConstrained
                 Msg = [Msg, 'Additionally, constraint violations are small ,', ...
                             'indicating a potential solution. '];
             end
         case 5
             Msg = ['Standard deviation variation is small, suggesting ', ...
                    'convergence towards a solution. '];
-            if CEobj.isConstrained
+            if CEstr.isConstrained
                 Msg = [Msg,'Constraint violations are also small, ', ...
                            'indicating satisfactory adherence to constraints. '];
             end
@@ -1044,13 +1080,13 @@ function PrintEnd(Xopt, Fopt, ExitFlag, CEobj)
     fprintf(']\n');
     
     % Display the number of iterations performed
-    fprintf('Iterations Performed: %d\n', CEobj.iter);
+    fprintf('Iterations Performed: %d\n', CEstr.iter);
 
     % Display the number of stall iterations
-    fprintf('Iterations on  Stall: %d\n', CEobj.stall);
+    fprintf('Iterations on  Stall: %d\n', CEstr.stall);
     
     % Display the total number of function evaluations
-    fprintf('Function Evaluations: %d\n', CEobj.Fcount);
+    fprintf('Function Evaluations: %d\n', CEstr.Fcount);
     disp('--------------------------------------------------------');
 end
 
@@ -1059,21 +1095,21 @@ end
 % -----------------------------------------------------------------
 % DeleteEmptyEntries - delete empty entries from sampling records
 % -----------------------------------------------------------------
-function CEobj = DeleteEmptyEntries(t,CEobj)
+function CEstr = DeleteEmptyEntries(t,CEstr)
 	
-    if t < CEobj.MaxIter
-        CEobj.xmean     = CEobj.xmean(1:t,:);
-        CEobj.xmedian   = CEobj.xmedian(1:t,:);
-        CEobj.xbest     = CEobj.xbest(1:t,:);
-        CEobj.Fmean     = CEobj.Fmean(1:t,1);
-        CEobj.Fmedian   = CEobj.Fmedian(1:t,1);
-        CEobj.Fbest     = CEobj.Fbest(1:t,1);
-        CEobj.sigma     = CEobj.sigma(1:t,:);
-        CEobj.ErrorS    = CEobj.ErrorS(1:t,1);
-        CEobj.ErrorC    = CEobj.ErrorC(1:t,1);
+    if t < CEstr.MaxIter
+        CEstr.xmean     = CEstr.xmean(1:t,:);
+        CEstr.xmedian   = CEstr.xmedian(1:t,:);
+        CEstr.xbest     = CEstr.xbest(1:t,:);
+        CEstr.Fmean     = CEstr.Fmean(1:t,1);
+        CEstr.Fmedian   = CEstr.Fmedian(1:t,1);
+        CEstr.Fbest     = CEstr.Fbest(1:t,1);
+        CEstr.sigma     = CEstr.sigma(1:t,:);
+        CEstr.ErrorS    = CEstr.ErrorS(1:t,1);
+        CEstr.ErrorC    = CEstr.ErrorC(1:t,1);
     end
-    if ~CEobj.isConstrained
-        CEobj.ErrorC = [];
+    if ~CEstr.isConstrained
+        CEstr.ErrorC = [];
     end
 end
 % -----------------------------------------------------------------
