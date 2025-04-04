@@ -23,7 +23,7 @@
 ### Overview
 **FraCTune** was developed to tune fractional-order controllers for dynamical systems by solving nonconvex optimization problems via the cross-entropy method. The underlying results are reported in the following publication:
 More details are in the following paper:
-- *J. C. C. Basilio, J. G. Telles Ribeiro, T. R. Oliveira and A. Cunha Jr, Optimal tunning of fractional controllers via cross-entropy method, 2024 (under review)*
+- *J. C. C. Basilio, J. G. Telles Ribeiro, T. R. Oliveira and A. Cunha Jr, Optimal tunning of fractional controllers via cross-entropy method, 2025 (under review)*
 
 Preprint available <a href="https://hal.archives-ouvertes.fr/xxx" target="_blank">here</a>.
 
@@ -67,14 +67,14 @@ Simulations done with **FraCTune** are fully reproducible, as can be seen on thi
 
 ### Citing FracTune
 We ask the code users to cite the following manuscript in any publications reporting work done with our code:
-- *J. C. C. Basilio, J. G. Telles Ribeiro, T. R. Oliveira and A. Cunha Jr, Optimal tunning of fractional controllers via cross-entropy method, 2024 (under review)*
+- *J. C. C. Basilio, J. G. Telles Ribeiro, T. R. Oliveira and A. Cunha Jr, Optimal tunning of fractional controllers via cross-entropy method, 2025 (under review)*
 
 ```
 @article{Basilio2024FraCTune,
    author  = {J. C. C. Basilio and J. G. {Telles Ribeiro} and T. R. Oliveira and A {Cunha~Jr}},
    title   = {Optimal tunning of fractional controllers via cross-entropy method},
    journal = {Under Review},
-   year    = {2024},
+   year    = {2025},
    volume  = {~},
    pages   = {~},
    doi    = {~},
@@ -88,7 +88,7 @@ We ask the code users to cite the following manuscript in any publications repor
 
 ### Institutional support
 
-<img src="logo/logo_uerj.png" width="13%">
+<img src="logo/logo_uerj.png" width="13%"> &nbsp; &nbsp; <img src="logo/logo_lncc.png" width="25%">
 
 ### Funding
 
